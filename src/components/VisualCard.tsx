@@ -243,6 +243,9 @@ function NoticiaCard({ content }: { content: string }) {
           {insight.length > 100 ? insight.slice(0, 100) + '…' : insight || 'FinoMik: aprende a leer la economía real desde el aula.'}
         </div>
       </div>
+
+      {/* Onda de marca */}
+      <WaveBottom fill="rgba(11,48,100,0.1)" height={55} />
     </div>
   )
 }
@@ -291,6 +294,9 @@ function FraseCard({ content }: { content: string }) {
       </div>
 
       <div style={{ position: 'absolute', bottom: 20, right: 24, zIndex: 2, fontSize: 10, fontWeight: 800, letterSpacing: 2, color: C.silver, textTransform: 'uppercase' }}>FinoMik</div>
+
+      {/* Onda de marca */}
+      <WaveBottom fill={C.navy2} height={55} />
     </div>
   )
 }
@@ -394,6 +400,9 @@ function ErrorCard({ content }: { content: string }) {
         <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.15)' }}>#FinanzasPersonales</span>
         <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase' }}>FinoMik</span>
       </div>
+
+      {/* Onda de marca */}
+      <WaveBottom fill="rgba(232,69,69,0.08)" height={50} />
     </div>
   )
 }
@@ -454,6 +463,9 @@ function ConceptoCard({ content }: { content: string }) {
         <span style={{ fontSize: 11, fontWeight: 800, color: C.yellow }}>Aprende mas en FinoMik →</span>
         <span style={{ fontSize: 10, fontWeight: 700, color: C.blue }}>#{concept.split(' ')[0]}</span>
       </div>
+
+      {/* Onda de marca */}
+      <WaveBottom fill="rgba(0,0,0,0.2)" height={50} />
     </div>
   )
 }

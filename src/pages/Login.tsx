@@ -11,9 +11,12 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setError('Email o contraseña incorrectos')
-    setLoading(false)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) setError('Email o contraseña incorrectos')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

@@ -5,6 +5,15 @@ import { config } from 'dotenv'
 
 config()
 
+if (!process.env.SUPABASE_URL) {
+  console.error('❌ SUPABASE_URL not set in .env')
+  process.exit(1)
+}
+if (!process.env.SUPABASE_SERVICE_KEY) {
+  console.error('❌ SUPABASE_SERVICE_KEY not set in .env')
+  process.exit(1)
+}
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY

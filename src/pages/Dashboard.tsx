@@ -7,14 +7,15 @@ interface Document {
   content: string
 }
 
-interface Session {
+interface ContentSession {
   id: string
   date: string
   documents: Document[]
 }
 
 export default function Dashboard() {
-  const [sessions, setSessions] = useState<Session[]>([])
+  const [sessions, setSessions] = useState<ContentSession[]>([])
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,7 +25,12 @@ export default function Dashboard() {
         .select('id, date, documents(type, content)')
         .order('date', { ascending: false })
 
-      if (!error && data) setSessions((data as Session[]).map(s => ({ ...s, documents: s.documents ?? [] })))
+      if (error) {
+        console.error('Error fetching sessions:', error.message)
+        setFetchError('No se pudo cargar el contenido. Inténtalo de nuevo.')
+      } else if (data) {
+        setSessions((data as ContentSession[]).map(s => ({ ...s, documents: s.documents ?? [] })))
+      }
       setLoading(false)
     }
     load()
@@ -53,7 +59,10 @@ export default function Dashboard() {
         {loading && (
           <p className="text-finomik-gray text-sm text-center py-12">Cargando...</p>
         )}
-        {!loading && sessions.length === 0 && (
+        {fetchError && (
+          <p className="text-red-500 text-sm text-center py-12">{fetchError}</p>
+        )}
+        {!loading && !fetchError && sessions.length === 0 && (
           <p className="text-finomik-gray text-sm text-center py-12">
             No hay contenido todavía. Ejecuta los agentes y luego <code>node sync.js</code>.
           </p>

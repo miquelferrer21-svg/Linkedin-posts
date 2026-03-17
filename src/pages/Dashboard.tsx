@@ -56,6 +56,12 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
+        <div className="bg-finomik-gray-light rounded-xl px-5 py-4 text-xs text-finomik-gray space-y-1">
+          <p className="font-bold text-finomik-blue">Como generar nuevos posts</p>
+          <p>1. Abre el terminal y ejecuta <code className="bg-white px-1 rounded">./run.sh</code> en la carpeta <code className="bg-white px-1 rounded">finomik-agents</code></p>
+          <p>2. Cuando termine, ejecuta <code className="bg-white px-1 rounded">node sync.js</code> en esta carpeta</p>
+          <p>3. Recarga la pagina. Los nuevos posts apareceran aqui abajo</p>
+        </div>
         {loading && (
           <p className="text-finomik-gray text-sm text-center py-12">Cargando...</p>
         )}

@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, existsSync } from 'fs'
 import { join } from 'path'
 import { config } from 'dotenv'
 
-config()
+config({ path: new URL('.env', import.meta.url).pathname })
 
 if (!process.env.SUPABASE_URL) {
   console.error('❌ SUPABASE_URL not set in .env')

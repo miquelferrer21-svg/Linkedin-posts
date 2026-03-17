@@ -1,5 +1,8 @@
 import DocumentViewer from './DocumentViewer'
+import VisualCard from './VisualCard'
 import { useState } from 'react'
+
+const TEXT_ONLY_TYPES = ['noticia_financiera']
 
 const TYPE_LABELS: Record<string, string> = {
   noticia_financiera: '📰 Noticia Financiera',
@@ -55,7 +58,10 @@ export default function SessionCard({ date, documents }: Props) {
       </div>
       {activeDoc && (
         <div className="px-6 py-5">
-          <DocumentViewer content={activeDoc.content} />
+          {TEXT_ONLY_TYPES.includes(activeDoc.type)
+            ? <DocumentViewer content={activeDoc.content} />
+            : <VisualCard type={activeDoc.type} content={activeDoc.content} />
+          }
         </div>
       )}
     </div>

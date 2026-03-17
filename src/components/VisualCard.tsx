@@ -19,9 +19,9 @@ const C = {
   lightBg: '#f8f6f0',
 }
 
-// ─── Onda SVG de marca ────────────────────────────────────────────────────────
-// Onda suave en la parte inferior de la tarjeta, como en la imagen de EduFin
-function WaveBottom({ fill, height = 90 }: { fill: string; height?: number }) {
+// ─── Onda SVG de marca EduFin ─────────────────────────────────────────────────
+// Una sola curva suave, característica de la identidad visual EduFin/FinoMik
+function WaveBottom({ fill, height = 80 }: { fill: string; height?: number }) {
   return (
     <svg
       viewBox={`0 0 540 ${height}`}
@@ -30,7 +30,7 @@ function WaveBottom({ fill, height = 90 }: { fill: string; height?: number }) {
       style={{ position: 'absolute', bottom: 0, left: 0, right: 0, width: '100%', height }}
     >
       <path
-        d={`M0,${height * 0.55} C90,${height * 0.15} 180,${height * 0.8} 270,${height * 0.45} C360,${height * 0.1} 450,${height * 0.75} 540,${height * 0.4} L540,${height} L0,${height} Z`}
+        d={`M0,${height * 0.65} C135,${height * 0.15} 405,${height * 0.9} 540,${height * 0.35} L540,${height} L0,${height} Z`}
         fill={fill}
       />
     </svg>
@@ -257,11 +257,6 @@ function FraseCard({ content }: { content: string }) {
 
   return (
     <div style={{ ...card, background: C.navy, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
-      {/* Circulos decorativos */}
-      <div style={{ position: 'absolute', width: 500, height: 500, top: -200, right: -200, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }} />
-      <div style={{ position: 'absolute', width: 300, height: 300, bottom: -100, left: -100, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }} />
-      <div style={{ position: 'absolute', width: 180, height: 180, top: 60, left: 60, borderRadius: '50%', border: '1px solid rgba(245,197,24,0.15)' }} />
-
       <div style={{ padding: '40px 36px', position: 'relative', zIndex: 2 }}>
         {/* Comilla amarilla */}
         <span style={{ fontSize: 80, fontWeight: 900, color: C.yellow, lineHeight: 0.6, marginBottom: 16, display: 'block', opacity: 0.7 }}>"</span>
@@ -309,49 +304,45 @@ function DatoCard({ content }: { content: string }) {
   const numRest = numParts?.[2] || bigNum.split(' ').slice(1).join(' ') || ''
 
   return (
-    <div style={{ ...card, background: C.lightBg, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '32px 28px', gap: 0, position: 'relative' }}>
-      {/* Circulos decorativos sutiles */}
-      <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: C.navy, opacity: 0.07 }} />
-      <div style={{ position: 'absolute', bottom: -40, left: -40, width: 140, height: 140, borderRadius: '50%', background: C.navy, opacity: 0.05 }} />
-
+    <div style={{ ...card, background: C.navy, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '32px 28px', gap: 0, position: 'relative' }}>
       {/* Eyebrow */}
-      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: C.blue, marginBottom: 18, position: 'relative', zIndex: 1 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: C.silver, marginBottom: 18, position: 'relative', zIndex: 1 }}>
         ¿Sabías que...?
       </div>
 
       {/* Numero grande */}
-      <div style={{ fontSize: bigNum.length > 15 ? 52 : bigNum.length > 8 ? 68 : 96, fontWeight: 900, color: C.navy, lineHeight: 1, letterSpacing: -4, marginBottom: 6, position: 'relative', zIndex: 1 }}>
-        {numBig}<span style={{ color: C.blue, fontSize: '55%' }}>{numRest ? ` ${numRest}` : ''}</span>
+      <div style={{ fontSize: bigNum.length > 15 ? 52 : bigNum.length > 8 ? 68 : 96, fontWeight: 900, color: C.yellow, lineHeight: 1, letterSpacing: -4, marginBottom: 6, position: 'relative', zIndex: 1 }}>
+        {numBig}<span style={{ color: C.mist, fontSize: '55%' }}>{numRest ? ` ${numRest}` : ''}</span>
       </div>
 
       {/* Unidad */}
       {unit && (
-        <div style={{ fontSize: 22, fontWeight: 900, color: C.slate, marginBottom: 14, position: 'relative', zIndex: 1 }}>{unit}</div>
+        <div style={{ fontSize: 22, fontWeight: 900, color: C.white, marginBottom: 14, position: 'relative', zIndex: 1 }}>{unit}</div>
       )}
 
       {/* Descripcion */}
-      <div style={{ fontSize: 15, fontWeight: 700, color: C.navy, lineHeight: 1.4, marginBottom: 18, maxWidth: 380, position: 'relative', zIndex: 1 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: C.white, lineHeight: 1.4, marginBottom: 18, maxWidth: 380, position: 'relative', zIndex: 1 }}>
         {desc.length > 80 ? desc.slice(0, 80) + '…' : desc || headline}
       </div>
 
-      <div style={{ width: 48, height: 3, background: C.navy, borderRadius: 2, margin: '0 auto 18px', opacity: 0.2, position: 'relative', zIndex: 1 }} />
+      <div style={{ width: 48, height: 3, background: C.yellow, borderRadius: 2, margin: '0 auto 18px', opacity: 0.4, position: 'relative', zIndex: 1 }} />
 
       {/* Contexto */}
       {body && (
-        <div style={{ fontSize: 12.5, fontWeight: 500, color: C.slateM, lineHeight: 1.6, maxWidth: 380, marginBottom: 22, position: 'relative', zIndex: 1 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 500, color: C.mist, lineHeight: 1.6, maxWidth: 380, marginBottom: 22, position: 'relative', zIndex: 1 }}>
           {body.length > 130 ? body.slice(0, 130) + '…' : body}
         </div>
       )}
 
       {/* CTA pill */}
-      <div style={{ background: C.navy, color: C.white, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '10px 22px', borderRadius: 100, position: 'relative', zIndex: 1 }}>
+      <div style={{ background: C.yellow, color: C.navy, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '10px 22px', borderRadius: 100, position: 'relative', zIndex: 1 }}>
         Por eso existe FinoMik →
       </div>
 
       <div style={{ position: 'absolute', bottom: 16, right: 20, fontSize: 9, fontWeight: 800, letterSpacing: 2, color: C.silver, textTransform: 'uppercase' }}>FinoMik</div>
 
-      {/* Onda de marca en la base */}
-      <WaveBottom fill="rgba(11,48,100,0.06)" height={70} />
+      {/* Onda de marca */}
+      <WaveBottom fill={C.navy2} height={70} />
     </div>
   )
 }
@@ -364,9 +355,6 @@ function ErrorCard({ content }: { content: string }) {
 
   return (
     <div style={{ ...card, background: C.dark, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      {/* Glow rojo */}
-      <div style={{ position: 'absolute', width: 350, height: 350, borderRadius: '50%', background: `radial-gradient(circle, rgba(232,69,69,0.15) 0%, transparent 70%)`, top: -80, right: -80 }} />
-
       {/* Top bar */}
       <div style={{ padding: '20px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 2 }}>
         <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase' }}>FinoMik</span>

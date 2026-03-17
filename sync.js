@@ -26,7 +26,7 @@ if (!outputsPath) {
 }
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
-const VALID_TYPES = ['tendencias', 'angulos', 'contenido', 'report_semanal']
+const VALID_TYPES = ['noticia_financiera', 'frase_iconica', 'dato_impactante', 'error_financiero', 'concepto_mes', 'nueva_funcionalidad']
 
 const dateDirs = readdirSync(outputsPath).filter(d => DATE_REGEX.test(d)).sort()
 

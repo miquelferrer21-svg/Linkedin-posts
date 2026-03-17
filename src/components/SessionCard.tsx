@@ -2,10 +2,12 @@ import DocumentViewer from './DocumentViewer'
 import { useState } from 'react'
 
 const TYPE_LABELS: Record<string, string> = {
-  tendencias: 'Tendencias',
-  angulos: 'Ángulos',
-  contenido: 'Contenido',
-  report_semanal: 'Report semanal',
+  noticia_financiera: '📰 Noticia Financiera',
+  frase_iconica: '💬 Frase Icónica',
+  dato_impactante: '📊 Dato Impactante',
+  error_financiero: '💸 Error Financiero',
+  concepto_mes: '🧠 Concepto del Mes',
+  nueva_funcionalidad: '🚀 Nueva Funcionalidad',
 }
 
 interface Document {

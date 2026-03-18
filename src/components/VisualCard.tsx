@@ -5,7 +5,7 @@ import html2canvas from 'html2canvas'
 // ─── Paleta (= CSS vars del HTML de referencia) ───────────────────────────────
 const C = {
   n1: '#0B3064', n2: '#114076',
-  s1: '#3C4C67', s2: '#3E5374',
+  s1: '#1a4a8a', s2: '#2960a8',
   b1: '#5574A7', b2: '#8F9EB7', b3: '#C8D0DD',
   bg: '#D8DFEE', white: '#FFFFFF',
 }
@@ -25,12 +25,18 @@ const CANVAS: React.CSSProperties = {
 function Wave({ f1, f2 }: { f1: string; f2: string }) {
   return (
     <div style={{ flexShrink: 0, lineHeight: 0 }}>
-      <svg viewBox="0 0 1080 150" preserveAspectRatio="none" style={{ display: 'block', width: 1080, height: 150 }}>
-        <path d="M0 96 C300 44 600 112 900 70 C990 56 1044 76 1080 66 L1080 150 L0 150Z" fill={f1} />
-        <path d="M0 114 C300 66 600 128 900 90 C990 76 1044 94 1080 84 L1080 150 L0 150Z" fill={f2} opacity={0.48} />
+      <svg viewBox="0 0 1080 380" preserveAspectRatio="none" style={{ display: 'block', width: 1080, height: 380 }}>
+        <path d="M0 200 C300 120 600 240 900 180 C990 160 1044 185 1080 170 L1080 380 L0 380Z" fill={f1} />
+        <path d="M0 230 C300 155 600 268 900 210 C990 190 1044 215 1080 200 L1080 380 L0 380Z" fill={f2} opacity={0.48} />
       </svg>
     </div>
   )
+}
+
+// ─── Logos ────────────────────────────────────────────────────────────────────
+function Logo({ variant, height = 48 }: { variant: 'light' | 'dark'; height?: number }) {
+  const src = variant === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'
+  return <img src={src} style={{ height, width: 'auto', display: 'block', objectFit: 'contain' }} />
 }
 
 // ─── Utilidades ───────────────────────────────────────────────────────────────
@@ -86,8 +92,10 @@ function parseDato(md: string) {
   const statMain = m ? m[1] : (statLine.split(' ')[0] || '?')
   const statEmphasis = m ? m[2] : ''
   const statIdx = statLine ? lines.indexOf(statLine) : -1
-  const statLabel = statIdx >= 0 && lines[statIdx + 1] ? clean(lines[statIdx + 1]) : clean(lines[1] || '')
-  const context = lines.find(l => l.length > 60 && !l.match(/^[#]|#\w/) && l !== statLine && clean(l) !== statLabel) || ''
+  const labelIdx = statIdx >= 0 && lines[statIdx + 1] && !lines[statIdx + 1].match(/^fuente:/i) ? statIdx + 1 : statIdx
+  const statLabel = labelIdx >= 0 && lines[labelIdx] !== statLine ? clean(lines[labelIdx]) : ''
+  const contextStartIdx = labelIdx + 1
+  const context = lines.find((l, i) => i >= contextStartIdx && l.length > 3 && !l.match(/^[#]|#\w/) && !l.match(/^fuente:/i)) || ''
   const source = lines.find(l => l.match(/fuente:|ocde|ine|banco de españa|pisa/i)) || ''
   return { statMain, statEmphasis, statLabel: statLabel.slice(0, 80), context: clean(context), source: clean(source).replace(/^fuente:\s*/i, '') }
 }
@@ -103,8 +111,8 @@ function parseError(md: string): ErrorData {
   const lines = ls(md)
   const bigNumLine = lines.find(l => l.match(/[+-]?\d+\s*(?:%|€|\$|k€)/i) && l.length < 50) || lines[0] || ''
   const bigNum = clean(bigNumLine) || '?'
-  const problemLabel = lines.find(l => l.length > 20 && l.length < 120 && l !== bigNumLine && !l.match(/^[#]|#\w|finomik/i)) || ''
-  const explanation = lines.find(l => l.length > 60 && l !== problemLabel && !l.match(/^[#]|#\w/)) || ''
+  const problemLabel = lines.find(l => l.length > 5 && l.length < 120 && l !== bigNumLine && !l.match(/^[#]|#\w|finomik|\d+\.|^✅|^✓|^→/i)) || ''
+  const explanation = lines.find(l => l.length > 20 && l !== bigNumLine && l !== problemLabel && !l.match(/^[#]|#\w|\d+\.|^✅|^✓|^→/)) || ''
   const itemLines = lines.filter(l => l.match(/^\d+\.|^•|^-|^✅|^❌/) && l.length > 5)
   function toItem(l: string): { title: string; text: string } {
     const c = clean(l)
@@ -140,7 +148,11 @@ function parseConcepto(md: string) {
   const concept = clean(lines[0] || '').replace(/^El concepto de [^:]+:\s*/i, '').replace(/^Concepto:\s*/i, '')
   const def = clean(lines.find(l => l.includes('📌')) || lines.find(l => l.length > 40 && l !== lines[0] && !l.match(/^[#]|#\w/)) || '')
   const steps = lines.filter(l => l.match(/^\d+\./)).slice(0, 3).map(l => clean(l.replace(/^\d+\.\s*/, '')))
-  const pills = lines.filter(l => l.match(/^[A-ZÁÉÍÓÚ\p{L}][\w\s\p{L}]{1,20}$/u) && l.length < 22 && l !== lines[0]).slice(0, 3)
+  const pills = lines.filter(l =>
+    l.match(/^[A-ZÁÉÍÓÚ\p{L}][\w\s\p{L}]{1,20}$/u) &&
+    l.length < 22 && l !== lines[0] &&
+    !l.match(/^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$/i)
+  ).slice(0, 3)
   const mLine = lines.find(l => l.match(/enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre/i))
   const mRaw = mLine?.match(/enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre/i)?.[0] || ''
   const month = mRaw ? mRaw.charAt(0).toUpperCase() + mRaw.slice(1) : currentMonth()
@@ -151,36 +163,33 @@ function parseConcepto(md: string) {
 // 01 · NUEVA FUNCIONALIDAD
 // ══════════════════════════════════════════════════════════════════════════════
 function FuncA({ content }: { content: string }) {
-  const { feat, desc } = parseFeat(content)
-  const words = feat.split(' ')
-  const last = words[words.length - 1]; const rest = words.slice(0, -1).join(' ')
+  const { feat, desc, features } = parseFeat(content)
+  const feats = features.length > 0 ? features : ['Beneficio clave para el aula', 'Ahorra tiempo al docente', 'Mejora el seguimiento']
   return (
-    <div style={{ ...CANVAS, background: C.n1 }}>
-      <div style={{ flex: 1, padding: '96px 96px 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, border: '1px solid rgba(255,255,255,.2)', borderRadius: 40, padding: '10px 28px', fontSize: 19, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.b3, width: 'fit-content', marginBottom: 52, flexShrink: 0 }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: C.b3 }} />Nueva función
-        </div>
-        <h2 style={{ fontSize: 82, fontWeight: 900, color: C.white, lineHeight: 1.05, margin: '0 0 28px', flexShrink: 0 }}>
-          {rest && <>{rest}<br /></>}<em style={{ fontStyle: 'normal', color: C.b2 }}>{last}</em>
-        </h2>
-        <p style={{ fontSize: 30, color: C.b3, lineHeight: 1.6, marginBottom: 36, maxWidth: 620, flexShrink: 0, margin: '0 0 36px' }}>{desc}</p>
-        <div style={{ background: C.n2, borderRadius: 14, border: `1px solid ${C.s2}`, overflow: 'hidden', flexShrink: 0, width: 680 }}>
-          <div style={{ height: 48, background: C.n1, display: 'flex', alignItems: 'center', padding: '0 22px', gap: 10 }}>
-            {[C.b1, C.s2, C.b2].map((bg, i) => <div key={i} style={{ width: 16, height: 16, borderRadius: '50%', background: bg }} />)}
-          </div>
-          <div style={{ display: 'flex', gap: 16, padding: 18 }}>
-            {[['60%','80%','55%'],['80%','50%','80%'],['65%','85%']].map((ws, ci) => (
-              <div key={ci} style={{ flex: 1, background: 'rgba(255,255,255,.05)', borderRadius: 8, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {ws.map((w, i) => <div key={i} style={{ height: 7, borderRadius: 4, background: (ci === 0 && i === 0) || (ci === 1 && i === 1) ? C.b1 : C.s2, width: w }} />)}
-              </div>
-            ))}
-          </div>
+    <div style={{ ...CANVAS, background: C.n1, display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <div style={{ padding: '52px 80px 44px', borderBottom: `1px solid rgba(255,255,255,.1)`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+        <Logo variant="dark" height={60} />
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: C.b1, borderRadius: 40, padding: '10px 28px', fontSize: 18, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.white }}>
+          🚀 Lanzamiento
         </div>
       </div>
-      <Wave f1={C.s2} f2={C.s1} />
-      <div style={{ position: 'absolute', bottom: 36, left: 96, fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.s2, zIndex: 2 }}>FINOMIK</div>
-      <div style={{ position: 'absolute', bottom: 64, right: 80, width: 96, height: 96, borderRadius: '50%', background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, boxShadow: '0 6px 24px rgba(0,0,0,.22)' }}>
-        <div style={{ width: 0, height: 0, borderLeft: `38px solid ${C.n1}`, borderTop: '22px solid transparent', borderBottom: '22px solid transparent', marginLeft: 8 }} />
+      {/* Body */}
+      <div style={{ flex: 1, padding: '56px 80px 40px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <h2 style={{ fontSize: feat.length > 28 ? 68 : 80, fontWeight: 900, color: C.white, lineHeight: 1.05, margin: '0 0 32px', flexShrink: 0 }}>{feat || 'Nombre de la funcionalidad'}</h2>
+        <div style={{ background: 'rgba(255,255,255,.07)', borderLeft: `5px solid ${C.b1}`, borderRadius: '0 12px 12px 0', padding: '28px 36px', fontSize: 28, color: C.b3, lineHeight: 1.65, marginBottom: 48, flexShrink: 0 }}>{desc}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
+          {feats.slice(0, 3).map((f, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 28, background: 'rgba(255,255,255,.05)', borderRadius: 14, padding: '22px 30px', flexShrink: 0 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: C.b1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: C.white, flexShrink: 0 }}>{i + 1}</div>
+              <span style={{ fontSize: 26, fontWeight: 600, color: C.b3, lineHeight: 1.3 }}>{f}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Footer */}
+      <div style={{ padding: '28px 80px', borderTop: `1px solid rgba(255,255,255,.1)`, display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
+        <div style={{ fontSize: 22, fontWeight: 600, color: C.b2 }}>finomik.com</div>
       </div>
     </div>
   )
@@ -188,31 +197,33 @@ function FuncA({ content }: { content: string }) {
 
 function FuncB({ content }: { content: string }) {
   const { feat, desc, features } = parseFeat(content)
-  const words = feat.split(' ')
-  const last = words[words.length - 1]; const rest = words.slice(0, -1).join(' ')
-  const feats = features.length > 0 ? features : ['Gestión inteligente del aula', 'Informes exportables', 'Seguimiento por alumno']
+  const feats = features.length > 0 ? features : ['Beneficio clave para el aula', 'Ahorra tiempo al docente', 'Mejora el seguimiento']
   return (
-    <div style={{ ...CANVAS, background: C.white }}>
-      <div style={{ height: 14, background: C.n1, flexShrink: 0 }} />
-      <div style={{ flex: 1, padding: '72px 96px', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-        <div style={{ position: 'absolute', right: -16, top: -40, fontSize: 380, fontWeight: 900, color: C.b3, opacity: .18, lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>01</div>
-        <div style={{ display: 'inline-block', background: C.n1, color: C.white, fontSize: 19, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', padding: '10px 28px', borderRadius: 28, width: 'fit-content', marginBottom: 44, flexShrink: 0, position: 'relative' }}>Nueva función</div>
-        <h2 style={{ fontSize: 78, fontWeight: 900, color: C.n1, lineHeight: 1.05, margin: '0 0 26px', flexShrink: 0, position: 'relative' }}>
-          {rest && <>{rest}<br /></>}<span style={{ color: C.b1 }}>{last}</span>
-        </h2>
-        <p style={{ fontSize: 30, color: C.s1, lineHeight: 1.6, maxWidth: 660, marginBottom: 44, flexShrink: 0, position: 'relative', margin: '0 0 44px' }}>{desc}</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 22, flexShrink: 0, position: 'relative' }}>
+    <div style={{ ...CANVAS, background: C.bg, display: 'flex', flexDirection: 'column' }}>
+      {/* Top card: feature name */}
+      <div style={{ background: C.n1, padding: '56px 80px 52px', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', right: -60, top: -60, width: 320, height: 320, borderRadius: '50%', border: `52px solid rgba(255,255,255,.05)` }} />
+        <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: C.b2, marginBottom: 18 }}>Nueva función · FinoMik</div>
+        <h2 style={{ fontSize: feat.length > 28 ? 62 : 74, fontWeight: 900, color: C.white, lineHeight: 1.05, margin: 0 }}>{feat || 'Nombre de la funcionalidad'}</h2>
+      </div>
+      {/* Body */}
+      <div style={{ flex: 1, padding: '44px 80px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <p style={{ fontSize: 28, color: C.n1, lineHeight: 1.65, marginBottom: 40, flexShrink: 0, fontWeight: 500 }}>{desc}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, flex: 1 }}>
           {feats.slice(0, 3).map((f, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', background: C.n1, flexShrink: 0 }} />
-              <span style={{ fontSize: 29, fontWeight: 600, color: C.s1 }}>{f}</span>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 26, background: C.white, borderRadius: 14, padding: '24px 32px', boxShadow: '0 2px 12px rgba(11,48,100,.07)', flexShrink: 0 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 10, background: C.n1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: 10, height: 18, borderRight: `3px solid ${C.white}`, borderBottom: `3px solid ${C.white}`, transform: 'rotate(45deg) translate(-2px,-4px)' }} />
+              </div>
+              <span style={{ fontSize: 26, fontWeight: 600, color: C.n1, lineHeight: 1.3 }}>{f}</span>
             </div>
           ))}
         </div>
-        <div style={{ marginTop: 'auto', paddingTop: 36, borderTop: `2px solid ${C.b3}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, position: 'relative' }}>
-          <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.n1 }}>FINOMIK</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: C.b1 }}>Ver demo →</div>
-        </div>
+      </div>
+      {/* Footer */}
+      <div style={{ padding: '28px 80px', background: C.white, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+        <Logo variant="light" height={56} />
+        <div style={{ fontSize: 22, fontWeight: 700, color: C.b1 }}>finomik.com</div>
       </div>
     </div>
   )
@@ -226,7 +237,7 @@ function NoticiaA({ content }: { content: string }) {
   return (
     <div style={{ ...CANVAS, background: C.n1, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '44px 80px', borderBottom: `2px solid ${C.n2}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ fontSize: 30, fontWeight: 900, color: C.white, letterSpacing: 4 }}>FINOMIK</div>
+        <Logo variant="dark" height={68} />
         <div style={{ fontSize: 20, color: C.b2, fontWeight: 600, letterSpacing: 1 }}>{currentDate()} · Actualidad</div>
       </div>
       <div style={{ flex: 1, padding: '48px 80px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -245,7 +256,7 @@ function NoticiaB({ content }: { content: string }) {
   return (
     <div style={{ ...CANVAS, background: C.bg, display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: C.n1, padding: '38px 68px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ fontSize: 30, fontWeight: 900, color: C.white, letterSpacing: 4 }}>FINOMIK</div>
+        <Logo variant="dark" height={68} />
         <div style={{ fontSize: 19, fontWeight: 700, color: C.b3, letterSpacing: 1, textTransform: 'uppercase' }}>Análisis propio</div>
       </div>
       <div style={{ flex: 1, margin: 36, background: C.white, borderRadius: 20, padding: 52, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -279,7 +290,7 @@ function FraseA({ content }: { content: string }) {
           {authorRole && <div style={{ fontSize: 24, color: C.b2, marginTop: 8 }}>{authorRole.slice(0, 50)}</div>}
         </div>
       </div>
-      <div style={{ position: 'absolute', bottom: 40, right: 80, fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.s2 }}>FINOMIK</div>
+      <div style={{ position: 'absolute', bottom: 40, right: 80, zIndex: 2 }}><Logo variant="dark" height={64} /></div>
     </div>
   )
 }
@@ -299,7 +310,7 @@ function FraseB({ content }: { content: string }) {
           {authorRole && <div style={{ fontSize: 24, color: C.b2, marginTop: 8 }}>{authorRole.slice(0, 50)}</div>}
         </div>
       </div>
-      <div style={{ position: 'absolute', bottom: 40, right: 80, fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.b2 }}>FINOMIK</div>
+      <div style={{ position: 'absolute', bottom: 40, right: 80, zIndex: 2 }}><Logo variant="light" height={64} /></div>
     </div>
   )
 }
@@ -323,7 +334,7 @@ function DatoA({ content }: { content: string }) {
         {source && <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: C.s2, marginTop: 20, flexShrink: 0 }}>Fuente: {source.slice(0, 60)}</div>}
       </div>
       <div style={{ background: C.n2, padding: '32px 96px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, zIndex: 1 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.white }}>FINOMIK</div>
+        <Logo variant="dark" height={64} />
         <div style={{ fontSize: 22, fontWeight: 700, color: C.b2 }}>Por eso existimos →</div>
       </div>
     </div>
@@ -345,7 +356,7 @@ function DatoB({ content }: { content: string }) {
         {source && <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: C.b3, marginTop: 20, flexShrink: 0 }}>Fuente: {source.slice(0, 60)}</div>}
       </div>
       <Wave f1={C.n1} f2={C.n2} />
-      <div style={{ position: 'absolute', bottom: 32, left: 96, fontSize: 24, fontWeight: 900, letterSpacing: 4, color: 'rgba(255,255,255,.9)', zIndex: 3 }}>FINOMIK</div>
+      <div style={{ position: 'absolute', bottom: 32, left: 96, zIndex: 3 }}><Logo variant="dark" height={64} /></div>
     </div>
   )
 }
@@ -370,7 +381,7 @@ function ErrSlide1({ data, bg }: { data: ErrorData; bg: string }) {
         <div style={{ fontSize: 27, color: 'rgba(255,255,255,.65)', lineHeight: 1.65, overflow: 'hidden', flex: 1 }}>{explanation.slice(0, 200)}</div>
       </div>
       <div style={{ padding: '28px 96px', background: C.n1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.b2 }}>FINOMIK</div>
+        <Logo variant="dark" height={60} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <div style={{ width: 16, height: 16, borderRadius: '50%', background: C.white }} />
@@ -407,7 +418,7 @@ function ErrSlide2({ data, bg }: { data: ErrorData; bg: string }) {
         </div>
       </div>
       <div style={{ background: C.n2, padding: '28px 96px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.b2 }}>FINOMIK</div>
+        <Logo variant="dark" height={60} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
@@ -445,7 +456,7 @@ function ErrSlide3({ data }: { data: ErrorData }) {
         </div>
       </div>
       <Wave f1={C.n1} f2={C.n2} />
-      <div style={{ position: 'absolute', bottom: 32, left: 96, fontSize: 24, fontWeight: 900, letterSpacing: 4, color: 'rgba(255,255,255,.9)', zIndex: 3 }}>FINOMIK</div>
+      <div style={{ position: 'absolute', bottom: 32, left: 96, zIndex: 3 }}><Logo variant="dark" height={60} /></div>
       <div style={{ position: 'absolute', bottom: 28, right: 80, display: 'flex', alignItems: 'center', gap: 10, zIndex: 3 }}>
         <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
         <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
@@ -485,7 +496,7 @@ function ConceptoA({ content }: { content: string }) {
         </div>
       </div>
       <div style={{ background: '#EEF2F8', padding: '28px 80px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.n1 }}>FINOMIK</div>
+        <Logo variant="light" height={64} />
         <div style={{ fontSize: 22, color: C.b2, fontWeight: 600 }}>Educación financiera real</div>
       </div>
     </div>
@@ -510,7 +521,7 @@ function ConceptoB({ content }: { content: string }) {
         <div style={{ background: C.n2, borderLeft: `6px solid ${C.b1}`, borderRadius: '0 14px 14px 0', padding: '32px 36px', fontSize: 28, color: C.b3, lineHeight: 1.6, fontWeight: 500, flexShrink: 0 }}>{def.slice(0, 180)}</div>
       </div>
       <Wave f1={C.s2} f2={C.s1} />
-      <div style={{ position: 'absolute', bottom: 36, right: 80, fontSize: 24, fontWeight: 900, letterSpacing: 4, color: 'rgba(255,255,255,.28)', zIndex: 3 }}>FINOMIK</div>
+      <div style={{ position: 'absolute', bottom: 36, right: 80, zIndex: 3 }}><Logo variant="dark" height={64} /></div>
     </div>
   )
 }

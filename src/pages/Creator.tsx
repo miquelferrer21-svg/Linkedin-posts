@@ -16,7 +16,7 @@ const POST_TYPES: { key: PostType; label: string }[] = [
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
-type FieldType = 'input' | 'textarea' | 'select'
+type FieldType = 'input' | 'textarea' | 'select' | 'note'
 
 interface FieldConfig {
   key: string
@@ -51,12 +51,14 @@ const FIELDS: Record<PostType, FieldConfig[]> = {
     { key: 'cifra',       label: 'Cifra',                    type: 'input',    maxLength: 40,  required: true, placeholder: 'ej: 72%' },
     { key: 'etiqueta',    label: 'Etiqueta del error',       type: 'input',    maxLength: 100, required: true },
     { key: 'explicacion', label: 'Explicacion',              type: 'textarea', required: true },
+    { key: '_cons',       label: 'Consecuencias (Diapositiva 2)', type: 'note' },
     { key: 'cons1titulo', label: 'Consecuencia 1 — Titulo',  type: 'input',    maxLength: 40 },
     { key: 'cons1texto',  label: 'Consecuencia 1 — Texto',   type: 'input',    maxLength: 100 },
     { key: 'cons2titulo', label: 'Consecuencia 2 — Titulo',  type: 'input',    maxLength: 40 },
     { key: 'cons2texto',  label: 'Consecuencia 2 — Texto',   type: 'input',    maxLength: 100 },
     { key: 'cons3titulo', label: 'Consecuencia 3 — Titulo',  type: 'input',    maxLength: 40 },
     { key: 'cons3texto',  label: 'Consecuencia 3 — Texto',   type: 'input',    maxLength: 100 },
+    { key: '_sols',       label: 'Soluciones (Diapositiva 3)', type: 'note' },
     { key: 'sol1titulo',  label: 'Solucion 1 — Titulo',      type: 'input',    maxLength: 40 },
     { key: 'sol1texto',   label: 'Solucion 1 — Texto',       type: 'input',    maxLength: 100 },
     { key: 'sol2titulo',  label: 'Solucion 2 — Titulo',      type: 'input',    maxLength: 40 },
@@ -68,9 +70,11 @@ const FIELDS: Record<PostType, FieldConfig[]> = {
     { key: 'concepto',   label: 'Nombre del concepto', type: 'input',    maxLength: 40,  required: true },
     { key: 'mes',        label: 'Mes',                 type: 'select',   options: MESES },
     { key: 'definicion', label: 'Definicion',          type: 'textarea', maxLength: 200 },
+    { key: '_pasos',     label: 'Pasos (Version A)',   type: 'note' },
     { key: 'paso1',      label: 'Paso 1',              type: 'input',    maxLength: 100 },
     { key: 'paso2',      label: 'Paso 2',              type: 'input',    maxLength: 100 },
     { key: 'paso3',      label: 'Paso 3',              type: 'input',    maxLength: 100 },
+    { key: '_pills',     label: 'Palabras clave (Version B)', type: 'note' },
     { key: 'pill1',      label: 'Palabra clave 1',     type: 'input',    maxLength: 18 },
     { key: 'pill2',      label: 'Palabra clave 2',     type: 'input',    maxLength: 18 },
     { key: 'pill3',      label: 'Palabra clave 3',     type: 'input',    maxLength: 18 },
@@ -121,44 +125,42 @@ function buildMarkdown(type: PostType, fields: Record<string, string>): string {
         '',
         `Fuente: ${f('fuente')}`,
       ].join('\n')
-    case 'error_financiero':
+    case 'error_financiero': {
+      const cons = [
+        f('cons1titulo') || f('cons1texto') ? `1. ${f('cons1titulo')}: ${f('cons1texto')}` : '',
+        f('cons2titulo') || f('cons2texto') ? `2. ${f('cons2titulo')}: ${f('cons2texto')}` : '',
+        f('cons3titulo') || f('cons3texto') ? `3. ${f('cons3titulo')}: ${f('cons3texto')}` : '',
+      ].filter(Boolean)
+      const sols = [
+        f('sol1titulo') || f('sol1texto') ? `\u2705 ${f('sol1titulo')}: ${f('sol1texto')}` : '',
+        f('sol2titulo') || f('sol2texto') ? `\u2705 ${f('sol2titulo')}: ${f('sol2texto')}` : '',
+        f('sol3titulo') || f('sol3texto') ? `\u2705 ${f('sol3titulo')}: ${f('sol3texto')}` : '',
+      ].filter(Boolean)
       return [
         f('cifra'),
         f('etiqueta'),
         f('explicacion'),
-        '',
-        `1. ${f('cons1titulo')}: ${f('cons1texto')}`,
-        `2. ${f('cons2titulo')}: ${f('cons2texto')}`,
-        `3. ${f('cons3titulo')}: ${f('cons3texto')}`,
-        '',
-        `\u2705 ${f('sol1titulo')}: ${f('sol1texto')}`,
-        `\u2705 ${f('sol2titulo')}: ${f('sol2texto')}`,
-        `\u2705 ${f('sol3titulo')}: ${f('sol3texto')}`,
+        ...(cons.length ? ['', ...cons] : []),
+        ...(sols.length ? ['', ...sols] : []),
       ].join('\n')
-    case 'concepto_mes':
+    }
+    case 'concepto_mes': {
+      const pasos = [f('paso1'), f('paso2'), f('paso3')]
+        .map((p, i) => p ? `${i + 1}. ${p}` : '')
+        .filter(Boolean)
+      const pillines = [f('pill1'), f('pill2'), f('pill3')].filter(Boolean)
       return [
         f('concepto'),
         f('mes') || MESES[0],
-        '',
-        `\u{1F4CC} ${f('definicion')}`,
-        '',
-        `1. ${f('paso1')}`,
-        `2. ${f('paso2')}`,
-        `3. ${f('paso3')}`,
-        '',
-        f('pill1'),
-        f('pill2'),
-        f('pill3'),
+        ...(f('definicion') ? ['', `\u{1F4CC} ${f('definicion')}`] : []),
+        ...(pasos.length ? ['', ...pasos] : []),
+        ...(pillines.length ? ['', ...pillines] : []),
       ].join('\n')
-    case 'nueva_funcionalidad':
-      return [
-        f('nombre'),
-        f('descripcion'),
-        '',
-        `- ${f('car1')}`,
-        `- ${f('car2')}`,
-        `- ${f('car3')}`,
-      ].join('\n')
+    }
+    case 'nueva_funcionalidad': {
+      const cars = [f('car1'), f('car2'), f('car3')].filter(Boolean).map(c => `- ${c}`)
+      return [f('nombre'), f('descripcion'), ...(cars.length ? ['', ...cars] : [])].join('\n')
+    }
     default:
       return ''
   }
@@ -279,7 +281,13 @@ export default function Creator() {
         <div className="grid grid-cols-2 gap-8 items-start">
           {/* Form column */}
           <div className="bg-white rounded-2xl shadow-sm border border-finomik-gray-light p-6 space-y-4">
-            {FIELDS[activeType].map(field => (
+            {FIELDS[activeType].map(field => {
+              if (field.type === 'note') return (
+                <div key={field.key} className="text-xs font-bold text-finomik-blue uppercase tracking-wider pt-4 mt-2 border-t border-finomik-gray-light">
+                  {field.label}
+                </div>
+              )
+              return (
               <div key={field.key}>
                 <label className={labelClass}>
                   {field.label}
@@ -314,7 +322,8 @@ export default function Creator() {
                   />
                 )}
               </div>
-            ))}
+              )
+            })}
 
             {error && (
               <p className="text-red-500 text-xs font-bold">{error}</p>

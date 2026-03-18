@@ -1,102 +1,42 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import PostCard from '../components/PostCard'
-
-type PostStatus = 'sin_revisar' | 'por_revisar' | 'colgado' | 'no_me_gusta'
-type FilterStatus = 'all' | PostStatus
-
-interface Post {
-  id: string
-  type: string
-  content: string
-  status: PostStatus
-  date: string
-  session_id: string
-  created_at: string
-}
 
 const POST_TYPES = [
-  { key: 'noticia_financiera', label: '📰 Noticia' },
-  { key: 'frase_iconica',      label: '💬 Frase' },
-  { key: 'dato_impactante',    label: '📊 Dato' },
-  { key: 'error_financiero',   label: '💸 Error' },
-  { key: 'concepto_mes',       label: '🧠 Concepto' },
-  { key: 'nueva_funcionalidad',label: '🚀 Funcionalidad' },
+  { key: 'noticia_financiera',  emoji: '📰', label: 'Noticia Financiera',   freq: '1-2 veces por semana' },
+  { key: 'frase_iconica',       emoji: '💬', label: 'Frase Icónica',        freq: 'Lunes o viernes' },
+  { key: 'dato_impactante',     emoji: '📊', label: 'Dato Impactante',      freq: '1 vez por semana' },
+  { key: 'error_financiero',    emoji: '💸', label: 'Error Financiero',     freq: 'Cada 2 semanas' },
+  { key: 'concepto_mes',        emoji: '🧠', label: 'Concepto del Mes',     freq: 'Primer lunes del mes' },
+  { key: 'nueva_funcionalidad', emoji: '🚀', label: 'Nueva Funcionalidad',  freq: 'Con cada release' },
 ]
 
-const FILTER_OPTIONS: { value: FilterStatus; label: string }[] = [
-  { value: 'all',          label: 'Todos' },
-  { value: 'sin_revisar',  label: 'Sin revisar' },
-  { value: 'por_revisar',  label: 'Por revisar' },
-  { value: 'colgado',      label: 'Colgado' },
-  { value: 'no_me_gusta',  label: 'No me gusta' },
-]
+type Counts = Record<string, { total: number; por_colgar: number; colgado: number }>
 
 export default function Dashboard() {
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [activeType, setActiveType] = useState<string>(
-    searchParams.get('type') || POST_TYPES[0].key
-  )
-  const [activeFilter, setActiveFilter] = useState<FilterStatus>('all')
-  const [posts, setPosts] = useState<Post[]>([])
+  const [counts, setCounts] = useState<Counts>({})
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadPosts() {
-      setLoading(true)
-      setError(null)
-
-      const { data, error: fetchError } = await supabase
-        .from('documents')
-        .select('*, sessions(date)')
-        .eq('type', activeType)
-        .order('created_at', { ascending: false })
-
-      if (fetchError) {
-        setError('No se pudo cargar el contenido. Inténtalo de nuevo.')
-      } else {
-        const mapped: Post[] = (data ?? []).map(({ sessions, ...rest }) => ({
-          ...rest,
-          status: rest.status as PostStatus,
-          date: (sessions as { date: string } | null)?.date ?? '',
-        }))
-        setPosts(mapped)
+    supabase.from('documents').select('type, status').then(({ data }) => {
+      if (data) {
+        const c: Counts = {}
+        for (const row of data) {
+          if (!c[row.type]) c[row.type] = { total: 0, por_colgar: 0, colgado: 0 }
+          c[row.type].total++
+          if (row.status === 'por_colgar' || row.status === 'por_revisar') c[row.type].por_colgar++
+          if (row.status === 'colgado') c[row.type].colgado++
+        }
+        setCounts(c)
       }
       setLoading(false)
-    }
-    loadPosts()
-  }, [activeType])
-
-  async function updateStatus(id: string, newStatus: PostStatus) {
-    // Capture original status before optimistic update for rollback
-    const originalStatus = posts.find(p => p.id === id)?.status ?? 'sin_revisar'
-
-    // Optimistic update
-    setPosts(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p))
-
-    const { error: updateError } = await supabase
-      .from('documents')
-      .update({ status: newStatus })   // only status — never content/type/session_id
-      .eq('id', id)
-
-    if (updateError) {
-      // Revert to original status on failure
-      setPosts(prev => prev.map(p => p.id === id ? { ...p, status: originalStatus } : p))
-      setError('No se pudo guardar el cambio. Inténtalo de nuevo.')
-      console.error('Error updating status:', updateError.message)
-    }
-  }
+    })
+  }, [])
 
   async function handleSignOut() {
     await supabase.auth.signOut()
   }
-
-  const filteredPosts = activeFilter === 'all'
-    ? posts
-    : posts.filter(p => p.status === activeFilter)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -112,75 +52,62 @@ export default function Dashboard() {
           >
             + Crear post
           </button>
-          <button
-            onClick={handleSignOut}
-            className="text-finomik-gray-light text-sm hover:text-white transition-colors"
-          >
+          <button onClick={handleSignOut} className="text-finomik-gray-light text-sm hover:text-white transition-colors">
             Salir
           </button>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         {/* Instructions */}
-        <div className="bg-finomik-gray-light rounded-xl px-5 py-4 text-xs text-finomik-gray space-y-1">
+        <div className="bg-white rounded-xl border border-finomik-gray-light px-5 py-4 text-xs text-finomik-gray space-y-1">
           <p className="font-bold text-finomik-blue">Como generar nuevos posts</p>
-          <p>1. Abre el terminal y ejecuta <code className="bg-white px-1 rounded">./run.sh</code> en la carpeta <code className="bg-white px-1 rounded">finomik-agents</code></p>
-          <p>2. Cuando termine, ejecuta <code className="bg-white px-1 rounded">node sync.js</code> en esta carpeta</p>
-          <p>3. Recarga la pagina. Los nuevos posts apareceran aqui abajo</p>
+          <p>1. Abre el terminal y ejecuta <code className="bg-gray-100 px-1 rounded">./run.sh</code> en la carpeta <code className="bg-gray-100 px-1 rounded">finomik-agents</code></p>
+          <p>2. Cuando termine, ejecuta <code className="bg-gray-100 px-1 rounded">node sync.js</code> en esta carpeta</p>
+          <p>3. Recarga la pagina. Los nuevos posts apareceran en cada seccion</p>
         </div>
 
-        {/* Type tabs */}
-        <div className="flex gap-2 flex-wrap">
-          {POST_TYPES.map(pt => (
-            <button
-              key={pt.key}
-              onClick={() => { setActiveType(pt.key); setActiveFilter('all') }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
-                activeType === pt.key
-                  ? 'bg-finomik-blue text-white'
-                  : 'bg-white text-finomik-blue border border-finomik-gray-light hover:bg-finomik-blue-light hover:text-white'
-              }`}
-            >
-              {pt.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Status filter */}
-        <div className="flex gap-2 flex-wrap items-center">
-          <span className="text-xs text-finomik-gray font-bold">Filtrar:</span>
-          {FILTER_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setActiveFilter(opt.value)}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors border ${
-                activeFilter === opt.value
-                  ? 'bg-finomik-blue text-white border-transparent'
-                  : 'bg-white text-finomik-gray border-finomik-gray-light hover:border-finomik-blue hover:text-finomik-blue'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        {loading && (
-          <p className="text-finomik-gray text-sm text-center py-12">Cargando...</p>
+        {/* Type grid */}
+        {loading ? (
+          <p className="text-center text-finomik-gray text-sm py-12">Cargando...</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            {POST_TYPES.map(pt => {
+              const c = counts[pt.key] ?? { total: 0, por_colgar: 0, colgado: 0 }
+              return (
+                <button
+                  key={pt.key}
+                  onClick={() => navigate(`/dashboard/${pt.key}`)}
+                  className="bg-white rounded-2xl border border-finomik-gray-light p-5 text-left hover:border-finomik-blue hover:shadow-md transition-all group"
+                >
+                  <div className="text-3xl mb-3">{pt.emoji}</div>
+                  <div className="font-black text-finomik-blue text-sm mb-1 group-hover:text-finomik-blue">{pt.label}</div>
+                  <div className="text-xs text-finomik-gray mb-4">{pt.freq}</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {c.por_colgar > 0 && (
+                      <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {c.por_colgar} por colgar
+                      </span>
+                    )}
+                    {c.colgado > 0 && (
+                      <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {c.colgado} publicado{c.colgado !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {c.total === 0 && (
+                      <span className="text-finomik-gray text-xs">Sin posts</span>
+                    )}
+                    {c.total > 0 && c.por_colgar === 0 && c.colgado === 0 && (
+                      <span className="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {c.total} sin revisar
+                      </span>
+                    )}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         )}
-        {error && (
-          <p className="text-red-500 text-sm text-center py-12">{error}</p>
-        )}
-        {!loading && !error && filteredPosts.length === 0 && (
-          <p className="text-finomik-gray text-sm text-center py-12">
-            No hay posts de este tipo
-            {activeFilter !== 'all' ? ' con este estado' : ''}.
-          </p>
-        )}
-        {!loading && !error && filteredPosts.map(post => (
-          <PostCard key={post.id} post={post} onStatusChange={updateStatus} />
-        ))}
       </main>
     </div>
   )

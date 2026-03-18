@@ -109,7 +109,7 @@ function buildMarkdown(type: PostType, fields: Record<string, string>): string {
       ].join('\n')
     case 'frase_iconica':
       return [
-        `\u201c${f('frase')}\u201d`,
+        `"${f('frase')}"`,
         `\u2014 ${f('nombre')}, ${f('cargo')}`,
       ].join('\n')
     case 'dato_impactante':

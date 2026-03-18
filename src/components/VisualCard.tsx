@@ -50,7 +50,7 @@ function parseFeat(md: string) {
   const lines = ls(md)
   const feat = clean(lines[0] || '').replace(/^Nueva función(?:\s+en\s+FinoMik)?:\s*/i, '')
   const desc = clean(lines.find(l => l.match(/permite|ahora|puedes|puede|A partir/i) && l.length > 20) || lines[1] || '')
-  const features = lines.filter(l => l.match(/^[•\-*]|^\d+\./) && l.length > 8).map(clean).slice(0, 3)
+  const features = lines.filter(l => l.match(/^[•\-*]|^\d+\./) && l.length > 3).map(clean).slice(0, 3)
   return { feat, desc, features }
 }
 
@@ -68,7 +68,7 @@ function parseFrase(md: string) {
   const lines = ls(md)
   let quote = '', authorLine = ''
   for (const l of lines) {
-    const qm = l.match(/[""]([^""]{10,})[""]/u)
+    const qm = l.match(/[""""]([^""""]{2,})[""""]/u)
     if (qm && !quote) { quote = qm[1]; continue }
     if (l.match(/^[–—-]\s*/) && !authorLine) { authorLine = l.replace(/^[–—-]\s*/, '').trim(); continue }
   }
@@ -81,7 +81,7 @@ function parseFrase(md: string) {
 
 function parseDato(md: string) {
   const lines = ls(md)
-  const statLine = lines.find(l => l.match(/[+-]?\d+\s*(?:de\s*cada\s*\d+|%|€|\$|k€)/i) && l.length < 60) || ''
+  const statLine = lines.find(l => l.match(/[+-]?\d+\s*(?:de\s*cada\s*\d+|%|€|\$|k€)/i) && l.length < 60) || lines[0] || ''
   const m = statLine.match(/^([+-]?[\d]+(?:[,.][\d]+)?(?:k)?)\s*(de\s*cada\s*\d+|%|€|\$|k€|[a-zA-Z€$%]*)/i)
   const statMain = m ? m[1] : (statLine.split(' ')[0] || '?')
   const statEmphasis = m ? m[2] : ''
@@ -89,7 +89,7 @@ function parseDato(md: string) {
   const statLabel = statIdx >= 0 && lines[statIdx + 1] ? clean(lines[statIdx + 1]) : clean(lines[1] || '')
   const context = lines.find(l => l.length > 60 && !l.match(/^[#]|#\w/) && l !== statLine && clean(l) !== statLabel) || ''
   const source = lines.find(l => l.match(/fuente:|ocde|ine|banco de españa|pisa/i)) || ''
-  return { statMain, statEmphasis, statLabel: statLabel.slice(0, 80), context: clean(context), source: clean(source) }
+  return { statMain, statEmphasis, statLabel: statLabel.slice(0, 80), context: clean(context), source: clean(source).replace(/^fuente:\s*/i, '') }
 }
 
 type ErrorData = {
@@ -101,11 +101,11 @@ type ErrorData = {
 }
 function parseError(md: string): ErrorData {
   const lines = ls(md)
-  const bigNumLine = lines.find(l => l.match(/[+-]?\d+\s*(?:%|€|\$|k€)/i) && l.length < 50) || ''
+  const bigNumLine = lines.find(l => l.match(/[+-]?\d+\s*(?:%|€|\$|k€)/i) && l.length < 50) || lines[0] || ''
   const bigNum = clean(bigNumLine) || '?'
   const problemLabel = lines.find(l => l.length > 20 && l.length < 120 && l !== bigNumLine && !l.match(/^[#]|#\w|finomik/i)) || ''
   const explanation = lines.find(l => l.length > 60 && l !== problemLabel && !l.match(/^[#]|#\w/)) || ''
-  const itemLines = lines.filter(l => l.match(/^\d+\.|^•|^-|^✅|^❌/) && l.length > 15)
+  const itemLines = lines.filter(l => l.match(/^\d+\.|^•|^-|^✅|^❌/) && l.length > 5)
   function toItem(l: string): { title: string; text: string } {
     const c = clean(l)
     const ci = c.indexOf(':')
@@ -120,7 +120,7 @@ function parseError(md: string): ErrorData {
         { title: 'Sin compensación', text: 'La mayoría de cuentas ofrecen un 0% de interés.' },
         { title: 'Efecto acumulado', text: 'En 10 años el daño puede ser miles de euros.' },
       ]
-  const solLines = lines.filter(l => l.match(/^✅|^✓|^→/) && l.length > 15)
+  const solLines = lines.filter(l => l.match(/^✅|^✓|^→/) && l.length > 5)
   const solutions = solLines.length >= 3
     ? solLines.slice(0, 3).map(toItem)
     : [
@@ -140,7 +140,7 @@ function parseConcepto(md: string) {
   const concept = clean(lines[0] || '').replace(/^El concepto de [^:]+:\s*/i, '').replace(/^Concepto:\s*/i, '')
   const def = clean(lines.find(l => l.includes('📌')) || lines.find(l => l.length > 40 && l !== lines[0] && !l.match(/^[#]|#\w/)) || '')
   const steps = lines.filter(l => l.match(/^\d+\./)).slice(0, 3).map(l => clean(l.replace(/^\d+\.\s*/, '')))
-  const pills = lines.filter(l => l.match(/^[A-ZÁÉÍÓÚ][\w\s]{2,18}$/u) && l.length < 22 && l !== lines[0]).slice(0, 3)
+  const pills = lines.filter(l => l.match(/^[A-ZÁÉÍÓÚ\p{L}][\w\s\p{L}]{1,20}$/u) && l.length < 22 && l !== lines[0]).slice(0, 3)
   const mLine = lines.find(l => l.match(/enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre/i))
   const mRaw = mLine?.match(/enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre/i)?.[0] || ''
   const month = mRaw ? mRaw.charAt(0).toUpperCase() + mRaw.slice(1) : currentMonth()

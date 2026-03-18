@@ -80,6 +80,7 @@ export default function Dashboard() {
     if (updateError) {
       // Revert to original status on failure
       setPosts(prev => prev.map(p => p.id === id ? { ...p, status: originalStatus } : p))
+      setError('No se pudo guardar el cambio. Inténtalo de nuevo.')
       console.error('Error updating status:', updateError.message)
     }
   }

@@ -51,12 +51,14 @@ const ACTIONS: { status: PostStatus; label: string; activeClass: string; hoverCl
 ]
 
 export default function PostCard({ post, onStatusChange }: Props) {
-  const formattedDate = new Date(post.date + 'T12:00:00').toLocaleDateString('es-ES', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const formattedDate = post.date
+    ? new Date(post.date + 'T12:00:00').toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : 'Sin fecha'
 
   function handleAction(status: PostStatus) {
     // Toggle: if already active, reset to sin_revisar

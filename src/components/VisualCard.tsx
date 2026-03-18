@@ -537,9 +537,9 @@ const CARDS_B: Record<string, CardComp> = {
 // ══════════════════════════════════════════════════════════════════════════════
 // Componente principal
 // ══════════════════════════════════════════════════════════════════════════════
-interface Props { type: string; content: string }
+interface Props { type: string; content: string; hideExport?: boolean }
 
-export default function VisualCard({ type, content }: Props) {
+export default function VisualCard({ type, content, hideExport = false }: Props) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [version, setVersion] = useState<'A' | 'B'>('A')
   const [slide, setSlide] = useState(0)
@@ -613,10 +613,12 @@ export default function VisualCard({ type, content }: Props) {
       )}
 
       {/* Exportar */}
-      <motion.button onClick={handleExport} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-        className="w-full py-3 rounded-xl text-sm font-bold bg-finomik-blue text-white hover:bg-finomik-blue-mid transition-colors">
-        Exportar PNG para LinkedIn
-      </motion.button>
+      {!hideExport && (
+        <motion.button onClick={handleExport} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+          className="w-full py-3 rounded-xl text-sm font-bold bg-finomik-blue text-white hover:bg-finomik-blue-mid transition-colors">
+          Exportar PNG para LinkedIn
+        </motion.button>
+      )}
 
     </motion.div>
   )

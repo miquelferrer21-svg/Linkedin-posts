@@ -324,7 +324,7 @@ export default function Creator() {
           {/* Preview column */}
           <div className="sticky top-8">
             <p className="text-xs font-bold text-finomik-gray mb-3">Preview en vivo</p>
-            <VisualCard type={activeType} content={markdown} />
+            <VisualCard type={activeType} content={markdown} hideExport />
           </div>
         </div>
       </main>

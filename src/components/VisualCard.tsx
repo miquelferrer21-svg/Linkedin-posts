@@ -57,7 +57,7 @@ function parseFeat(md: string) {
 function parseNoticia(md: string) {
   const lines = ls(md)
   const headline = clean(lines[0] || '')
-  const source = lines.find(l => l.match(/banco|ocde|ine|cnmv|financial|bloomberg|reuters|expansión/i) && l.length < 80) || ''
+  const source = lines.find(l => l.match(/fuente:|banco|ocde|ine|cnmv|financial|bloomberg|reuters|expansión/i) && l.length < 80) || ''
   const body = lines.filter(l => l !== lines[0] && l !== source && !l.match(/^[#]|#\w/) && l.length > 30).slice(0, 3).join(' ')
   const insight = lines.find(l => l.toLowerCase().includes('finomik') || l.match(/¿sab|entend|aprend/i)) || ''
   const hashtag = lines.find(l => l.startsWith('#')) || '#EducaciónFinanciera'
@@ -371,7 +371,16 @@ function ErrSlide1({ data, bg }: { data: ErrorData; bg: string }) {
       </div>
       <div style={{ padding: '28px 96px', background: C.n1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.b2 }}>FINOMIK</div>
-        <div style={{ fontSize: 20, color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>1 / 3</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ width: 16, height: 16, borderRadius: '50%', background: C.white }} />
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,.5)', letterSpacing: 1 }}>
+            Desliza <span style={{ fontSize: 22 }}>→</span>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -399,7 +408,16 @@ function ErrSlide2({ data, bg }: { data: ErrorData; bg: string }) {
       </div>
       <div style={{ background: C.n2, padding: '28px 96px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 4, color: C.b2 }}>FINOMIK</div>
-        <div style={{ fontSize: 20, color: C.s2, fontWeight: 600 }}>2 / 3</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
+            <div style={{ width: 16, height: 16, borderRadius: '50%', background: C.white }} />
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,.5)', letterSpacing: 1 }}>
+            Desliza <span style={{ fontSize: 22 }}>→</span>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -428,7 +446,11 @@ function ErrSlide3({ data }: { data: ErrorData }) {
       </div>
       <Wave f1={C.n1} f2={C.n2} />
       <div style={{ position: 'absolute', bottom: 32, left: 96, fontSize: 24, fontWeight: 900, letterSpacing: 4, color: 'rgba(255,255,255,.9)', zIndex: 3 }}>FINOMIK</div>
-      <div style={{ position: 'absolute', bottom: 32, right: 80, fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,.55)', zIndex: 3 }}>3 / 3</div>
+      <div style={{ position: 'absolute', bottom: 28, right: 80, display: 'flex', alignItems: 'center', gap: 10, zIndex: 3 }}>
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,255,255,.3)' }} />
+        <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(255,255,255,.9)' }} />
+      </div>
     </div>
   )
 }

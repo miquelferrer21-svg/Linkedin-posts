@@ -51,15 +51,6 @@ const ACTIONS: { status: PostStatus; label: string; activeClass: string; hoverCl
 ]
 
 export default function PostCard({ post, onStatusChange }: Props) {
-  const formattedDate = post.date
-    ? new Date(post.date + 'T12:00:00').toLocaleDateString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : 'Sin fecha'
-
   function handleAction(status: PostStatus) {
     // Toggle: if already active, reset to sin_revisar
     const next: PostStatus = post.status === status ? 'sin_revisar' : status
@@ -68,20 +59,6 @@ export default function PostCard({ post, onStatusChange }: Props) {
 
   return (
     <div className={`bg-white rounded-2xl shadow-sm border border-finomik-gray-light overflow-hidden ${STATUS_STYLES[post.status]}`}>
-      {/* Date header */}
-      <div className="px-6 py-3 border-b border-finomik-gray-light flex items-center justify-between">
-        <p className="font-extrabold text-finomik-blue capitalize text-sm">{formattedDate}</p>
-        {post.status !== 'sin_revisar' && (
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-            post.status === 'por_revisar' ? 'bg-yellow-100 text-yellow-700' :
-            post.status === 'colgado' ? 'bg-green-100 text-green-700' :
-            'bg-red-100 text-red-700'
-          }`}>
-            {STATUS_LABELS[post.status]}
-          </span>
-        )}
-      </div>
-
       {/* Visual card */}
       <div className="px-6 py-5">
         <VisualCard type={post.type} content={post.content} />

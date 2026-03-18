@@ -68,7 +68,7 @@ Los campos corresponden exactamente a lo que los parsers de `VisualCard` extraen
 Markdown generado:
 ```
 {titular}
-{fuente}
+Fuente: {fuente}
 
 {contexto}
 
@@ -76,6 +76,8 @@ Markdown generado:
 
 #{hashtagTematico}
 ```
+
+**Nota de implementacion:** La linea de fuente DEBE ir prefijada con "Fuente: " (el parser `parseNoticia` en `VisualCard` necesita detectarla, y se actualizara para aceptar tambien el patron `fuente:` ademas de los nombres de organismos). Ver cambios en `VisualCard.tsx` mas abajo.
 
 ### frase_iconica
 
@@ -150,7 +152,7 @@ Markdown generado:
 | Campo | Descripcion | Restricciones |
 |---|---|---|
 | Nombre del concepto | max 4 palabras | max 40 chars |
-| Mes | Nombre del mes en español | selector dropdown |
+| Mes | Nombre del mes en español | selector dropdown — el valor elegido debe ser la unica palabra de mes en todo el markdown generado; los campos Nombre del concepto, Definicion y Pasos no deben contener nombres de meses |
 | Definicion | 1 frase en lenguaje cotidiano | max 200 chars |
 | Paso 1 | | max 100 chars |
 | Paso 2 | | max 100 chars |
@@ -180,7 +182,7 @@ Markdown generado:
 | Campo | Descripcion | Restricciones |
 |---|---|---|
 | Nombre de la funcionalidad | max 6 palabras | max 60 chars |
-| Descripcion | Empieza por "Ahora puedes" o "A partir de hoy" | max 200 chars |
+| Descripcion | DEBE empezar por "Ahora puedes", "A partir de hoy" o "FinoMik permite" — es un requisito del parser, no solo una sugerencia | max 200 chars |
 | Caracteristica 1 | Beneficio concreto | max 100 chars |
 | Caracteristica 2 | Beneficio concreto | max 100 chars |
 | Caracteristica 3 | Beneficio concreto | max 100 chars |
@@ -205,6 +207,7 @@ Markdown generado:
 - Para tarjetas con version A/B, se muestran los botones de version debajo de la preview (igual que en `PostCard`).
 - Para Error Financiero, se muestran los botones de slide.
 - La preview no es interactiva en cuanto a exportacion: el boton de exportar PNG no aparece aqui.
+- Para Error Financiero, la preview muestra TANTO los botones de slide (1/2/3) COMO los botones de version A/B, igual que en `VisualCard` (no son mutuamente excluyentes).
 
 ---
 
@@ -226,7 +229,8 @@ Markdown generado:
 | `src/App.tsx` | Añadir ruta `/crear` |
 | `src/pages/Dashboard.tsx` | Añadir boton "Crear post" en el header |
 | `src/pages/Creator.tsx` | Crear pagina nueva |
-| `src/components/PostCard.tsx` | Eliminar la fecha del post |
+| `src/components/PostCard.tsx` | Eliminar el JSX de la fecha (sin cambiar props ni interfaz) |
+| `src/components/VisualCard.tsx` | Actualizar `parseNoticia`: añadir `fuente:` al patron de deteccion de fuente |
 
 ### `src/pages/Creator.tsx` — Nueva pagina
 
@@ -244,7 +248,7 @@ La funcion `buildMarkdown(type, fields)` construye el string markdown segun el t
 
 ### `src/components/PostCard.tsx`
 
-Eliminar el bloque que muestra la fecha del post. No hay cambios funcionales, solo visuales.
+Eliminar el bloque JSX que muestra la fecha del post. No cambiar la interfaz `Post` ni las props del componente: el campo `date` sigue existiendo en el tipo pero simplemente deja de renderizarse.
 
 ---
 

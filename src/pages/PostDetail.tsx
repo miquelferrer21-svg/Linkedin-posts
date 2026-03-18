@@ -68,9 +68,10 @@ export default function PostDetail() {
       .then(({ data }) => {
         if (data) {
           const { sessions, ...rest } = data as { sessions: { date: string } | null } & Omit<Post, 'date'>
+          const rawStatus = rest.status as string
           setPost({
             ...rest,
-            status: (rest.status === 'por_revisar' ? 'por_colgar' : rest.status) as PostStatus,
+            status: (rawStatus === 'por_revisar' ? 'por_colgar' : rawStatus) as PostStatus,
             date: (sessions as { date: string } | null)?.date ?? '',
           })
         }

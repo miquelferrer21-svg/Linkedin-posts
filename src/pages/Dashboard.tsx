@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import PostCard from '../components/PostCard'
 
@@ -33,7 +34,11 @@ const FILTER_OPTIONS: { value: FilterStatus; label: string }[] = [
 ]
 
 export default function Dashboard() {
-  const [activeType, setActiveType] = useState<string>(POST_TYPES[0].key)
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [activeType, setActiveType] = useState<string>(
+    searchParams.get('type') || POST_TYPES[0].key
+  )
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('all')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -100,12 +105,20 @@ export default function Dashboard() {
           <h1 className="font-black text-xl">Finomik</h1>
           <p className="text-finomik-gray-light text-xs">Content Hub</p>
         </div>
-        <button
-          onClick={handleSignOut}
-          className="text-finomik-gray-light text-sm hover:text-white transition-colors"
-        >
-          Salir
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/crear')}
+            className="bg-white text-finomik-blue text-sm font-bold px-4 py-1.5 rounded-xl hover:bg-finomik-gray-light transition-colors"
+          >
+            + Crear post
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="text-finomik-gray-light text-sm hover:text-white transition-colors"
+          >
+            Salir
+          </button>
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
